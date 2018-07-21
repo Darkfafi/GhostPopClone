@@ -77,27 +77,27 @@ public class Game<T, U> : IGame<T> where T : class, IGameWorld where U : BaseGam
         }
     }
 
-    public void AddGlobalStateSwitcher<SS>() where SS : BaseGlobalStateSwitcher<T>
+    public void AddGlobalStateSwitcher<GSS>() where GSS : BaseGlobalStateSwitcher<T>
     {
-        if(!HasGlobalStateSwitcherType<SS>())
+        if(!HasGlobalStateSwitcherType<GSS>())
         {
-            SS stateSwitcher = Activator.CreateInstance(typeof(SS)) as SS;
-            _globalStateSwitchers.Add(typeof(SS), stateSwitcher);
+            GSS stateSwitcher = Activator.CreateInstance(typeof(GSS)) as GSS;
+            _globalStateSwitchers.Add(typeof(GSS), stateSwitcher);
             stateSwitcher.Activate(this);
         }
     }
 
-    public bool HasGlobalStateSwitcherType<SS>() where SS : BaseGlobalStateSwitcher<T>
+    public bool HasGlobalStateSwitcherType<GSS>() where GSS : BaseGlobalStateSwitcher<T>
     {
-        return _globalStateSwitchers.ContainsKey(typeof(SS));
+        return _globalStateSwitchers.ContainsKey(typeof(GSS));
     }
 
-    public void RemoveGlobalStateSwitcher<SS>() where SS : BaseGlobalStateSwitcher<T>
+    public void RemoveGlobalStateSwitcher<GSS>() where GSS : BaseGlobalStateSwitcher<T>
     {
-        if (HasGlobalStateSwitcherType<SS>())
+        if (HasGlobalStateSwitcherType<GSS>())
         {
-            BaseGlobalStateSwitcher<T> ss = _globalStateSwitchers[typeof(SS)];
-            _globalStateSwitchers.Remove(typeof(SS));
+            BaseGlobalStateSwitcher<T> ss = _globalStateSwitchers[typeof(GSS)];
+            _globalStateSwitchers.Remove(typeof(GSS));
             ss.Deactivate();
         }
     }
