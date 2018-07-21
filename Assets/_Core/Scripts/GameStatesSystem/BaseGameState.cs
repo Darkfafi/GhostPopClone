@@ -14,7 +14,6 @@ public abstract class BaseGameState<T> where T : class, IGameWorld
     private IGame<T> _game;
     private bool _initialized = false;
     private StateParameters _currentStateParameters;
-    private GameStateRawData _currentRawData;
 
     public void Initialize(T gameWorld, IGame<T> game)
     {
@@ -29,26 +28,26 @@ public abstract class BaseGameState<T> where T : class, IGameWorld
         OnInitialized();
     }
 
-    public void Activate(StateParameters parameters, GameStateRawData rawData)
+    public void Activate(StateParameters parameters)
     {
         if(_currentStateParameters != null)
         {
             return;
         }
-        _currentRawData = rawData;
+
         _currentStateParameters = parameters;
         OnActivated();
     }
 
-    public GameStateItem? Deactivate()
+    public GameStateItem? Deactivate(Type[] allSwitchers)
     {
         if (_currentStateParameters == null)
         {
             return null;
         }
         _currentStateParameters = null;
-        OnDeactivated(_currentRawData);
-        return GetGameStateItem();
+        OnDeactivated();
+        return GetGameStateItem(allSwitchers);
     }
 
     public void Deinitialize()
@@ -59,13 +58,12 @@ public abstract class BaseGameState<T> where T : class, IGameWorld
         }
         OnDeinitialize();
         GameWorld = null;
-        _currentRawData = null;
         _initialized = false;
     }
 
-    public GameStateItem GetGameStateItem()
+    public GameStateItem GetGameStateItem(Type[] allSwitchers)
     {
-        return new GameStateItem(GetType(), _currentStateParameters, _currentRawData);
+        return new GameStateItem(GetType(), _currentStateParameters, allSwitchers);
     }
 
     protected IGame<T> GetGame()
@@ -76,7 +74,7 @@ public abstract class BaseGameState<T> where T : class, IGameWorld
     protected abstract void OnInitialized();
     protected abstract void OnDeinitialize();
     protected abstract void OnActivated();
-    protected abstract void OnDeactivated(GameStateRawData rawData);
+    protected abstract void OnDeactivated();
 }
 
 public class StateParameters
@@ -111,9 +109,4 @@ public class StateParameters
 public interface IStateParameter
 {
 
-}
-
-public class GameStateRawData
-{
-    public Dictionary<string, object> RawStateData = new Dictionary<string, object>();
 }

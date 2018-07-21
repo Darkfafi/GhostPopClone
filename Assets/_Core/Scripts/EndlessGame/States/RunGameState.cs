@@ -9,7 +9,7 @@ public class RunGameState : BaseGameState<EndlessGameWorld>
         Debug.Log("BB: " + _myNumber);
     }
 
-    protected override void OnDeactivated(GameStateRawData rawData)
+    protected override void OnDeactivated()
     {
         Debug.Log("CB: " + _myNumber);
 

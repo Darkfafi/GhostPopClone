@@ -5,17 +5,32 @@ using UnityEngine;
 
 public class IntroGameState : BaseGameState<EndlessGameWorld>
 {
+    public event Action EndOfIntroEvent;
+
     private int _myNumber;
 
     protected override void OnActivated()
     {
         Debug.Log("B: " + _myNumber);
+        GameWorld.UserInput.KeyPressedEvent += OnKeyPressedEvent;
     }
 
-    protected override void OnDeactivated(GameStateRawData rawData)
+    protected override void OnDeactivated()
     {
         Debug.Log("C: " + _myNumber);
+        GameWorld.UserInput.KeyPressedEvent -= OnKeyPressedEvent;
 
+    }
+
+    private void OnKeyPressedEvent(string keyID)
+    {
+        if(keyID == UserInputNotifier.ACTION)
+        {
+            if(EndOfIntroEvent != null)
+            {
+                EndOfIntroEvent();
+            }
+        }
     }
 
     protected override void OnDeinitialize()
@@ -26,7 +41,7 @@ public class IntroGameState : BaseGameState<EndlessGameWorld>
 
     protected override void OnInitialized()
     {
-        _myNumber = this.GetHashCode();
+        _myNumber = (int)(UnityEngine.Random.value * 100);
         Debug.Log("A: " + _myNumber);
     }
 }
