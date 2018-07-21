@@ -34,9 +34,8 @@ public abstract class BaseGameState<T> where T : class, IGameWorld
         {
             return;
         }
-
         _currentStateParameters = parameters;
-        OnActivated();
+        OnActivated(parameters);
     }
 
     public GameStateItem? Deactivate(Type[] allSwitchers)
@@ -45,9 +44,11 @@ public abstract class BaseGameState<T> where T : class, IGameWorld
         {
             return null;
         }
-        _currentStateParameters = null;
         OnDeactivated();
-        return GetGameStateItem(allSwitchers);
+        GameStateItem item = GetGameStateItem(allSwitchers);
+        _currentStateParameters.Clean();
+        _currentStateParameters = null;
+        return item;
     }
 
     public void Deinitialize()
@@ -63,7 +64,7 @@ public abstract class BaseGameState<T> where T : class, IGameWorld
 
     public GameStateItem GetGameStateItem(Type[] allSwitchers)
     {
-        return new GameStateItem(GetType(), _currentStateParameters, allSwitchers);
+        return new GameStateItem(GetType(), _currentStateParameters.Copy(), allSwitchers);
     }
 
     protected IGame<T> GetGame()
@@ -73,7 +74,7 @@ public abstract class BaseGameState<T> where T : class, IGameWorld
 
     protected abstract void OnInitialized();
     protected abstract void OnDeinitialize();
-    protected abstract void OnActivated();
+    protected abstract void OnActivated(StateParameters parameters);
     protected abstract void OnDeactivated();
 }
 
@@ -98,11 +99,40 @@ public class StateParameters
         }
     }
 
-    public T TryGetStateParameter<T>() where T : IStateParameter
+    public StateParameters Copy()
+    {
+        List<IStateParameter> parameters = new List<IStateParameter>();
+
+        if (_parameters != null)
+        {
+            foreach (var p in _parameters)
+            {
+                parameters.Add(p.Value);
+            }
+        }
+
+        return new StateParameters(parameters.ToArray());
+    }
+
+    public void Clean()
+    {
+        _parameters.Clear();
+        _parameters = null;
+    }
+
+    public bool TryGetStateParameter<T>(out T parameterValue, T defaultValue = null) where T : class, IStateParameter
     {
         IStateParameter p;
-        _parameters.TryGetValue(typeof(T), out p);
-        return (T)p;
+        parameterValue = defaultValue;
+
+        bool b = _parameters.TryGetValue(typeof(T), out p);
+
+        if(b)
+        {
+            parameterValue = p as T;
+        }
+
+        return b;
     }
 }
 

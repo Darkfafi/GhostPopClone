@@ -4,9 +4,12 @@ public class RunGameState : BaseGameState<EndlessGameWorld>
 {
     private int _myNumber;
 
-    protected override void OnActivated()
+    protected override void OnActivated(StateParameters parameters)
     {
-        Debug.Log("BB: " + _myNumber);
+        MyDataParameter data;
+        parameters.TryGetStateParameter(out data, new MyDataParameter(Random.Range(1337, 2674)));
+
+        Debug.Log("BB: " + _myNumber + " << " + data.MyValue);
     }
 
     protected override void OnDeactivated()

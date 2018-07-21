@@ -10,7 +10,7 @@ public class GameInitializer : MonoBehaviour
     protected void Awake()
     {
         _game = new Game<EndlessGameWorld, IntroGameState>(_gameWorld, 
-            new GameStateConstructionItem<EndlessGameWorld>().AddSwitcher<IntroEndRunSwitcher>()
+            new GameStateConstructor<EndlessGameWorld>().AddSwitcher<IntroEndRunSwitcher>()
         );
 
         _game.AddGlobalStateSwitcher<GlobalPreviousStateSwitcher>();

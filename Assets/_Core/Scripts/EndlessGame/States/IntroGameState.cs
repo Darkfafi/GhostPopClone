@@ -9,7 +9,7 @@ public class IntroGameState : BaseGameState<EndlessGameWorld>
 
     private int _myNumber;
 
-    protected override void OnActivated()
+    protected override void OnActivated(StateParameters parameters)
     {
         Debug.Log("B: " + _myNumber);
         GameWorld.UserInput.KeyPressedEvent += OnKeyPressedEvent;
@@ -43,5 +43,16 @@ public class IntroGameState : BaseGameState<EndlessGameWorld>
     {
         _myNumber = (int)(UnityEngine.Random.value * 100);
         Debug.Log("A: " + _myNumber);
+    }
+}
+
+
+public class MyDataParameter : IStateParameter
+{
+    public int MyValue;
+
+    public MyDataParameter(int v)
+    {
+        MyValue = v;
     }
 }

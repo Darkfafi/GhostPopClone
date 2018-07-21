@@ -17,6 +17,6 @@ public class IntroEndRunSwitcher : BaseStateSwitcher<EndlessGameWorld, IntroGame
 
     private void OnEndOfIntroEvent()
     {
-        Game.SwitchGameState<RunGameState>();
+        Game.SwitchGameState<RunGameState>(GameStateConstructor<EndlessGameWorld>.Create().SetStateParameters(new MyDataParameter(676)));
     }
 }

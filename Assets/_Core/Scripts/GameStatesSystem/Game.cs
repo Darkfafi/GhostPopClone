@@ -6,14 +6,14 @@ public class Game<T, U> : IGame<T> where T : class, IGameWorld where U : BaseGam
 {
     private T _gameWorld;
     private Dictionary<Type, BaseGameState<T>> _cachedGameStates = new Dictionary<Type, BaseGameState<T>>();
-    private GameStateConstructionItem<T> _defaultStateConstructor;
+    private GameStateConstructor<T> _defaultStateConstructor;
     private Stack<GameStateItem> _gameStateHistory = new Stack<GameStateItem>();
     private Dictionary<Type, BaseGlobalStateSwitcher<T>> _globalStateSwitchers = new Dictionary<Type, BaseGlobalStateSwitcher<T>>();
     private Dictionary<Type, BaseStateSwitcher<T>> _currentGameStateSwitchers = new Dictionary<Type, BaseStateSwitcher<T>>();
     private Type[] _currentSwitcherTypes;
     private BaseGameState<T> _currentGameState;
 
-    public Game(T gameWorld, GameStateConstructionItem<T> stateConstructor = null)
+    public Game(T gameWorld, GameStateConstructor<T> stateConstructor = null)
     {
         _gameWorld = gameWorld;
         _cachedGameStates = new Dictionary<Type, BaseGameState<T>>();
@@ -44,17 +44,17 @@ public class Game<T, U> : IGame<T> where T : class, IGameWorld where U : BaseGam
         return _gameStateHistory.ToArray();
     }
 
-    public void SwitchGameState<GameState>(GameStateConstructionItem<T> constructor = null) where GameState : BaseGameState<T>, new()
+    public void SwitchGameState<GameState>(GameStateConstructor<T> constructor = null) where GameState : BaseGameState<T>, new()
     {
         SwitchGameState(typeof(GameState), constructor);
     }
 
     public void SwitchGameState(GameStateItem gameStateItem)
     {
-        InternalSwitchGameState(gameStateItem.GameStateType, new GameStateConstructionItem<T>(gameStateItem));
+        InternalSwitchGameState(gameStateItem.GameStateType, GameStateConstructor<T>.Create(gameStateItem));
     }
 
-    public void SwitchGameState(Type gameStateType, GameStateConstructionItem<T> constructor = null)
+    public void SwitchGameState(Type gameStateType, GameStateConstructor<T> constructor = null)
     {
         InternalSwitchGameState(gameStateType, constructor);
     }
@@ -63,7 +63,8 @@ public class Game<T, U> : IGame<T> where T : class, IGameWorld where U : BaseGam
     {
         if(_gameStateHistory.Count > 0)
         {
-            SwitchGameState(_gameStateHistory.Peek()); // Not Pop, because we want the history chain to stay untouched.
+            GameStateItem item = _gameStateHistory.Peek();
+            SwitchGameState(item); // Not Pop, because we want the history chain to stay untouched.
         }
     }
 
@@ -147,7 +148,7 @@ public class Game<T, U> : IGame<T> where T : class, IGameWorld where U : BaseGam
     }
 
 
-    private void InternalSwitchGameState(Type gameStateType, GameStateConstructionItem<T> constructor)
+    private void InternalSwitchGameState(Type gameStateType, GameStateConstructor<T> constructor)
     {
         BaseGameState<T> gameStateInstance;
 
@@ -166,7 +167,7 @@ public class Game<T, U> : IGame<T> where T : class, IGameWorld where U : BaseGam
         }
     }
 
-    private void StateSwitchOperation(BaseGameState<T> gameStateInstance, GameStateConstructionItem<T> constructor)
+    private void StateSwitchOperation(BaseGameState<T> gameStateInstance, GameStateConstructor<T> constructor)
     {
         if (_currentGameState != null)
         {
@@ -240,8 +241,8 @@ public interface IGame<T> where T : class, IGameWorld
     Type GetCurrentStateType();
     GameStateItem GetPreviousState();
     GameStateItem[] GetStateHistory();
-    void SwitchGameState<GameState>(GameStateConstructionItem<T> constructor = null) where GameState : BaseGameState<T>, new();
-    void SwitchGameState(Type gameStateType, GameStateConstructionItem<T> constructor = null);
+    void SwitchGameState<GameState>(GameStateConstructor<T> constructor = null) where GameState : BaseGameState<T>, new();
+    void SwitchGameState(Type gameStateType, GameStateConstructor<T> constructor = null);
     void SwitchGameState(GameStateItem gameStateItem);
     void SwitchToPreviousGameState();
     void ResetGame();
@@ -261,7 +262,7 @@ public struct GameStateItem
     }
 }
 
-public class GameStateConstructionItem<T> where T : class, IGameWorld
+public class GameStateConstructor<T> where T : class, IGameWorld
 {
     public StateParameters Parameters { get; private set; }
 
@@ -270,41 +271,57 @@ public class GameStateConstructionItem<T> where T : class, IGameWorld
         get
         {
             return _switcherTypes.ToArray();
-        }
+        } 
     }
 
     private List<Type> _switcherTypes = new List<Type>();
 
-    public GameStateConstructionItem()
+    public static GameStateConstructor<T> Create()
     {
-        Parameters = new StateParameters(new IStateParameter[] { });
-        _switcherTypes = new List<Type>();
+        return new GameStateConstructor<T>().Initialize();
     }
 
-    public GameStateConstructionItem(StateParameters parameters)
+    public static GameStateConstructor<T> Create(StateParameters parameters)
     {
-        Parameters = parameters;
-        _switcherTypes = new List<Type>();
+        return new GameStateConstructor<T>().Initialize(parameters);
     }
 
-    public GameStateConstructionItem(GameStateItem item)
+    public static GameStateConstructor<T> Create(GameStateItem item)
     {
-        Parameters = item.Parameters;
-        _switcherTypes = new List<Type>();
-
-        if(item.SwitcherTypes != null)
-            _switcherTypes.AddRange(item.SwitcherTypes);
+        return new GameStateConstructor<T>().Initialize(item);
     }
 
-    public GameStateConstructionItem<T> AddSwitcher<U>() where U : BaseStateSwitcher<T>
+    public GameStateConstructor<T> AddSwitcher<U>() where U : BaseStateSwitcher<T>
     {
         _switcherTypes.Add(typeof(U));
         return this;
     }
 
-    public GameStateConstructionItem<T> SetStateParameters(params IStateParameter[] parameters)
+    public GameStateConstructor<T> SetStateParameters(params IStateParameter[] parameters)
     {
         Parameters = new StateParameters(parameters);
+        return this;
+    }
+
+    private GameStateConstructor<T> Initialize()
+    {
+        return Initialize(new StateParameters(new IStateParameter[] { }));
+    }
+
+    private GameStateConstructor<T> Initialize(StateParameters parameters)
+    {
+        Parameters = parameters;
+        _switcherTypes = new List<Type>();
+        return this;
+    }
+
+    private GameStateConstructor<T> Initialize(GameStateItem item)
+    {
+        Initialize(item.Parameters);
+
+        if (item.SwitcherTypes != null)
+            _switcherTypes.AddRange(item.SwitcherTypes);
+
         return this;
     }
 }
