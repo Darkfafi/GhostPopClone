@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using GameStateSystem;
 
 public class IntroEndRunSwitcher : BaseStateSwitcher<EndlessGameWorld, IntroGameState>
 {

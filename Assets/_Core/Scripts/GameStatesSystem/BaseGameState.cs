@@ -1,142 +1,82 @@
 ﻿using System;
-using System.Collections.Generic;
-/// <summary>
-/// State which can create other classes (including create objects & components) which would determine the rules of the Game World (T)
-/// </summary>
-public abstract class BaseGameState<T> where T : class, IGameWorld
+
+namespace GameStateSystem
 {
-    public T GameWorld
+    /// <summary>
+    /// State which can create other classes (including create objects & components) which would determine the rules of the Game World (T)
+    /// </summary>
+    public abstract class BaseGameState<T> where T : class, IGameWorld
     {
-        get;
-        private set;
-    }
-
-    private IGame<T> _game;
-    private bool _initialized = false;
-    private StateParameters _currentStateParameters;
-
-    public void Initialize(T gameWorld, IGame<T> game)
-    {
-        if(_initialized)
+        public T GameWorld
         {
-            return;
+            get;
+            private set;
         }
 
-        _game = game;
-        GameWorld = gameWorld;
-        _initialized = true;
-        OnInitialized();
-    }
+        private IGame<T> _game;
+        private bool _initialized = false;
+        private StateParameters _currentStateParameters;
 
-    public void Activate(StateParameters parameters)
-    {
-        if(_currentStateParameters != null)
+        public void Initialize(T gameWorld, IGame<T> game)
         {
-            return;
-        }
-        _currentStateParameters = parameters;
-        OnActivated(parameters);
-    }
-
-    public GameStateItem? Deactivate(Type[] allSwitchers)
-    {
-        if (_currentStateParameters == null)
-        {
-            return null;
-        }
-        OnDeactivated();
-        GameStateItem item = GetGameStateItem(allSwitchers);
-        _currentStateParameters.Clean();
-        _currentStateParameters = null;
-        return item;
-    }
-
-    public void Deinitialize()
-    {
-        if (!_initialized)
-        {
-            return;
-        }
-        OnDeinitialize();
-        GameWorld = null;
-        _initialized = false;
-    }
-
-    public GameStateItem GetGameStateItem(Type[] allSwitchers)
-    {
-        return new GameStateItem(GetType(), _currentStateParameters.Copy(), allSwitchers);
-    }
-
-    protected IGame<T> GetGame()
-    {
-        return _game;
-    }
-
-    protected abstract void OnInitialized();
-    protected abstract void OnDeinitialize();
-    protected abstract void OnActivated(StateParameters parameters);
-    protected abstract void OnDeactivated();
-}
-
-public class StateParameters
-{
-    private Dictionary<Type, IStateParameter> _parameters = new Dictionary<Type, IStateParameter>();
-
-    public StateParameters(IStateParameter[] parameters)
-    {
-        Type t;
-        for(int i = 0; i < parameters.Length; i++)
-        {
-            t = parameters[i].GetType();
-            if (!_parameters.ContainsKey(t))
+            if (_initialized)
             {
-                _parameters.Add(t, parameters[i]);
+                return;
             }
-            else
-            {
-                UnityEngine.Debug.LogWarningFormat("Can't add parameter of Type {0} because a parameter of that type has already been added", t);
-            }
+
+            _game = game;
+            GameWorld = gameWorld;
+            _initialized = true;
+            OnInitialized();
         }
-    }
 
-    public StateParameters Copy()
-    {
-        List<IStateParameter> parameters = new List<IStateParameter>();
-
-        if (_parameters != null)
+        public void Activate(StateParameters parameters)
         {
-            foreach (var p in _parameters)
+            if (_currentStateParameters != null)
             {
-                parameters.Add(p.Value);
+                return;
             }
+            _currentStateParameters = parameters;
+            OnActivated(parameters);
         }
 
-        return new StateParameters(parameters.ToArray());
-    }
-
-    public void Clean()
-    {
-        _parameters.Clear();
-        _parameters = null;
-    }
-
-    public bool TryGetStateParameter<T>(out T parameterValue, T defaultValue = null) where T : class, IStateParameter
-    {
-        IStateParameter p;
-        parameterValue = defaultValue;
-
-        bool b = _parameters.TryGetValue(typeof(T), out p);
-
-        if(b)
+        public GameStateItem? Deactivate(Type[] allSwitchers)
         {
-            parameterValue = p as T;
+            if (_currentStateParameters == null)
+            {
+                return null;
+            }
+            OnDeactivated();
+            GameStateItem item = GetGameStateItem(allSwitchers);
+            _currentStateParameters.Clean();
+            _currentStateParameters = null;
+            return item;
         }
 
-        return b;
+        public void Deinitialize()
+        {
+            if (!_initialized)
+            {
+                return;
+            }
+            OnDeinitialize();
+            GameWorld = null;
+            _initialized = false;
+        }
+
+        public GameStateItem GetGameStateItem(Type[] allSwitchers)
+        {
+            return new GameStateItem(GetType(), _currentStateParameters.Copy(), allSwitchers);
+        }
+
+        protected IGame<T> GetGame()
+        {
+            return _game;
+        }
+
+        protected abstract void OnInitialized();
+        protected abstract void OnDeinitialize();
+        protected abstract void OnActivated(StateParameters parameters);
+        protected abstract void OnDeactivated();
     }
-}
-
-public interface IStateParameter
-{
-
 }

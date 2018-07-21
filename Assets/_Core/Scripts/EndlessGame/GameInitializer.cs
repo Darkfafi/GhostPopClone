@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using GameStateSystem;
 
 public class GameInitializer : MonoBehaviour
 {

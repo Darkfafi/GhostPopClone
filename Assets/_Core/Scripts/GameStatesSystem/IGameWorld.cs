@@ -1,4 +1,4 @@
-﻿public interface IGameWorld
+﻿namespace GameStateSystem
 {
-
+    public interface IGameWorld { }
 }

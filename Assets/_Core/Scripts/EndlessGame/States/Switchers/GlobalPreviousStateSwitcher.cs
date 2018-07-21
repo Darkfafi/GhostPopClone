@@ -1,4 +1,6 @@
-﻿public class GlobalPreviousStateSwitcher : BaseGlobalStateSwitcher<EndlessGameWorld>
+﻿using GameStateSystem;
+
+public class GlobalPreviousStateSwitcher : BaseGlobalStateSwitcher<EndlessGameWorld>
 {
     protected override void OnActivate(IGame<EndlessGameWorld> game)
     {
