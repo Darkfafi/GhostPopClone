@@ -776,9 +776,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfc69a4941caa3d40b1b50ad92d433f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _size: {x: 20, y: 50}
+  _size: {x: 20, y: 100}
   _chunkAmount: 20
-  _speed: 3
+  _speed: 5
   _groundChunkPrefab: {fileID: 1604310691499058, guid: 12c8a1d56dd098545b2672073e74bbd1,
     type: 2}
   _sizeRenderColor: {r: 0, g: 1, b: 1, a: 1}
